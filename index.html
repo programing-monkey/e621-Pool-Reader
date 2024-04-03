@@ -4,29 +4,33 @@
 
 <!-- Zero Quality Guarantees, there will likely be bugs, I will likely not fix them, do not report them to me. -->
 <!-- to use, goto 'https://programing-monkey.github.io/e621-Pool-Reader/?pool={POOL_ID_GOES_HERE}' -->
+
 <title>e621 pool reader</title>
 <script>
 	//before everything else, get url params
 	const urlParams = new URLSearchParams(window.location.search);
 
+	//set url params to consts
+	const CURRENT_PAGE = Number(urlParams.get('page')??'0');
+	const CURRENT_POOL = urlParams.get('pool')??'11'; //defaults to first pool with rating:safe (to avoid blinding people from an error xD)
+
 	//change page
 	function gotoPage(page) {
-		window.location.replace(`${window.location.pathname}?pool=${POOL_INFO.id}&page=${page}`);
+		window.location.replace(`${window.location.protocol}//${window.location.pathname}?pool=${CURRENT_POOL}&page=${page}`);
 	}
-	//change pool
-	/*function gotoPool(pool) {
-		// not yet implemented
-	}*/
-
-
-	//check if there is a 'page' url varible, and if there isn't then create it and set it to 0
-	if(!urlParams.has('page')){
-		gotoPage(0);
+	//change pool (not used atm)
+	function gotoPool(pool) {
+		window.location.replace(`${window.location.protocol}//${window.location.pathname}?pool=${pool}&page=0`);
 	}
 
-	//set url params to consts
-	const CURRENT_PAGE = Number(urlParams.get('page'));
-	const CURRENT_POOL = urlParams.get('pool');
+
+	//make sure url matches params
+	if (window.location.href != `${window.location.protocol}//${window.location.pathname}?pool=${CURRENT_POOL}&page=${CURRENT_PAGE}`) {
+		console.log("HELP!!");
+		console.log(window.location.href);
+		console.log(`${window.location.protocol}${window.location.pathname}?pool=${CURRENT_POOL}&page=${CURRENT_PAGE}`);
+		window.location.replace(`${window.location.protocol}//${window.location.pathname}?pool=${CURRENT_POOL}&page=${CURRENT_PAGE}`);
+	}
 
 	//core http request functions
 	function xhrSuccess() {
@@ -176,6 +180,7 @@
 	<!-- bottom menu-->
 	<div class="buttonMenu right">
 		<button onclick="loadPoolToCookies();">force reload cookies</button>
+		<button onClick="loadPages()">force reload pages</button>
 		<button onClick="firstPage();">first page</button>
 		<button onClick="backPage();">back page</button>
 		<button onClick="nextPage();">next page</button>
