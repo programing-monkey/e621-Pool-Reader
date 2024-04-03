@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<!-- Zero Quality Guarantees, there will likely be bugs, I will likely not fix them, do not report them to me. -->
+<!-- to use, goto '/e621_pool_reader.html?pool={POOL_ID_GOES_HERE}' -->
+<title>e621 pool reader</title>
+<script>
+	//before everything else, get url params
+	const urlParams = new URLSearchParams(window.location.search);
+
+	//change page
+	function gotoPage(page) {
+		window.location.replace(`${window.location.pathname}?pool=${POOL_INFO.id}&page=${page}`);
+	}
+	//change pool
+	/*function gotoPool(pool) {
+		// not yet implemented
+	}*/
+
+
+	//check if there is a 'page' url varible, and if there isn't then create it and set it to 0
+	if(!urlParams.has('page')){
+		gotoPage(0);
+	}
+
+	//set url params to consts
+	const CURRENT_PAGE = Number(urlParams.get('page'));
+	const CURRENT_POOL = urlParams.get('pool');
+
+	//core http request functions
+	function xhrSuccess() {
+	  this.callback.apply(this, this.arguments);
+	}
+	async function httpGet(jsonUrl, callback, ...args){
+		//console.log(jsonUrl, args);
+		const xhr = new XMLHttpRequest();
+		xhr.callback = callback;
+		xhr.onload = xhrSuccess;
+		xhr.arguments = args;
+		xhr.open("GET", jsonUrl, true)
+		xhr.send(null);
+	}
+	
+
+
+
+	// functions for loading the data from the pool into cookies
+	function responseToCookies(){
+		document.cookie = this.response;
+		//console.log(this.response);
+	}
+	function loadPoolToCookies(){
+		console.log(`loading 'https://e621.net/pools/${CURRENT_POOL}.json' to cookies."`);
+		httpGet(`https://e621.net/pools/${CURRENT_POOL}.json`, responseToCookies);
+	}
+	
+
+
+
+	// functions for getting the image urls and setting them onto the imgs
+	function responseToPage(panel){
+		//console.log(this.response, JSON.parse(this.response));
+		document.getElementById(panel).src = JSON.parse(this.response).post.file.url;
+	}
+	function loadPages(){
+		httpGet(`https://e621.net/posts/${POOL_INFO.post_ids[CURRENT_PAGE]}.json`, responseToPage, 'panel_1');
+		httpGet(`https://e621.net/posts/${POOL_INFO.post_ids[CURRENT_PAGE+1]}.json`, responseToPage, 'panel_2');
+	
+	}
+		
+
+
+
+
+
+	//navigation fuctions (works via the buttons)
+	function firstPage() {
+		gotoPage(0);
+	}
+	function backPage() {
+		gotoPage(CURRENT_PAGE-2);
+	}
+	function nextPage() {
+		gotoPage(CURRENT_PAGE+2);
+	}
+	function lastPage() {
+		gotoPage(POOL_INFO.post_count-1);
+	}
+
+
+
+
+
+
+
+	
+	//load pool if it's not already there
+	if(document.cookie == ""){
+		loadPoolToCookies();
+	}
+	
+	//load pool into var
+	const POOL_INFO = JSON.parse(document.cookie);
+	
+
+	
+	//finally load the pages	
+	loadPages()
+</script>
+<style type="text/css">
+	:root {
+		--buttonMenuHeight: 100vh;
+		--buttonMenuWidth: 10vw;
+		--pagesBoxHeight: 100vh;
+		--pagesBoxWidth: calc(100vw - var(--buttonMenuWidth));
+	}
+	body {
+		background-color: #111;
+		margin:0;
+	}
+
+	.pagesBox {
+		height: var(--pagesBoxHeight);
+		width: var(--pagesBoxWidth);
+		position: absolute;
+		margin: 0px;
+	}
+	.buttonMenu {
+		height: var(--buttonMenuHeight);
+		width: var(--buttonMenuWidth);
+		top:0px;
+		right:0px;
+		position: fixed;
+	}
+	.pageDiv {
+		width: calc(var(--pagesBoxWidth) / 2);
+		height: var(--pagesBoxHeight);
+		position: absolute;
+	}
+	.pageImg {
+		height: var(--pagesBoxHeight);
+		position: absolute;
+
+	}
+	.left {
+		left: 0px;
+	}
+	.right {
+		right: 0px;
+	}
+	button {
+		display: block;
+	}
+	.pagesBox1 {
+
+	}
+	.pagesBox2 {
+		left: calc(var(--pagesBoxWidth) / 2);
+	}
+</style>
+</head>
+<body>
+	<!-- pages box -->
+	<div class="pagesBox">
+		<!-- first comic panel -->
+		<div class="pagesBox pageDiv">
+			<img id="panel_1" class="pageImg right">
+		</div>
+		<!-- second comic panel -->
+		<div class="pagesBox pagesBox2 pageDiv">
+			<img id="panel_2" class="pageImg left">
+		</div>
+	</div><!-- -->
+	
+	<!-- bottom menu-->
+	<div class="buttonMenu right">
+		<button onclick="loadPoolToCookies();">force reload cookies</button>
+		<button onClick="firstPage();">first page</button>
+		<button onClick="backPage();">back page</button>
+		<button onClick="nextPage();">next page</button>
+		<button onClick="lastPage();">last page</button>
+	</div>
+</body>
+</html>
