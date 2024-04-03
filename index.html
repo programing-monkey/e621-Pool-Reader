@@ -14,22 +14,24 @@
 	const CURRENT_PAGE = Number(urlParams.get('page')??'0');
 	const CURRENT_POOL = urlParams.get('pool')??'11'; //defaults to first pool with rating:safe (to avoid blinding people from an error xD)
 
+	const BASE_URL = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
+
 	//change page
 	function gotoPage(page) {
-		window.location.replace(`${window.location.protocol}//${window.location.pathname}?pool=${CURRENT_POOL}&page=${page}`);
+		window.location.replace(`${BASE_URL}?pool=${CURRENT_POOL}&page=${page}`);
 	}
 	//change pool (not used atm)
 	function gotoPool(pool) {
-		window.location.replace(`${window.location.protocol}//${window.location.pathname}?pool=${pool}&page=0`);
+		window.location.replace(`${BASE_URL}?pool=${pool}&page=0`);
 	}
 
 
 	//make sure url matches params
-	if (window.location.href != `${window.location.protocol}//${window.location.pathname}?pool=${CURRENT_POOL}&page=${CURRENT_PAGE}`) {
+	if (window.location.href != `${BASE_URL}?pool=${CURRENT_POOL}&page=${CURRENT_PAGE}`) {
 		console.log("HELP!!");
 		console.log(window.location.href);
-		console.log(`${window.location.protocol}${window.location.pathname}?pool=${CURRENT_POOL}&page=${CURRENT_PAGE}`);
-		window.location.replace(`${window.location.protocol}//${window.location.pathname}?pool=${CURRENT_POOL}&page=${CURRENT_PAGE}`);
+		console.log(`${BASE_URL}?pool=${CURRENT_POOL}&page=${CURRENT_PAGE}`);
+		window.location.replace(`${BASE_URL}?pool=${CURRENT_POOL}&page=${CURRENT_PAGE}`);
 	}
 
 	//core http request functions
